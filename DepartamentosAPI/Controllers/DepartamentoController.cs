@@ -16,10 +16,12 @@ namespace DepartamentosAPI.Controllers
     public class DepartamentoController : ControllerBase
     {
         private readonly DepartamentoRepository _repository;
+        private readonly ActividadRepository _actividadRepository;
         private readonly IMapper _mapper;
-        public DepartamentoController(DepartamentoRepository repoDepartamento, IMapper mapper )
+        public DepartamentoController(DepartamentoRepository repoDepartamento, IMapper mapper, ActividadRepository actividadRepository )
         {
                 _repository = repoDepartamento;
+                _actividadRepository = actividadRepository;
                 _mapper = mapper;   
         }
         [HttpGet]
@@ -107,8 +109,20 @@ namespace DepartamentosAPI.Controllers
         public IActionResult Eliminar(int id)
         {
             var departamento = _repository.Get(id);
+            var actividadesDepartamento = _actividadRepository.GetActividadesByDepartamento(id)?.ToList();
+            if (actividadesDepartamento != null)
+            {
+                foreach (var actividad in actividadesDepartamento)
+                {
+                        actividad.Estado = 2;
+                       _actividadRepository.Update(actividad);
+                }
+            }
+           
             if (departamento != null)
             {
+                departamento.IdSuperior = null;
+                _repository.Update(departamento);
                 _repository.Delete(departamento);
                 return Ok("Departamento eliminado");
             }

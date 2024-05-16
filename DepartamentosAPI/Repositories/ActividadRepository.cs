@@ -25,6 +25,10 @@ namespace DepartamentosAPI.Repositories
         {
             return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 0);
         }
+        public IEnumerable<Actividades> ? GetActividadesByDepartamento(int id)
+        {
+            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x=>x.IdDepartamento == id);
+        }
         public override Actividades? Get(object id)
         {
             if (id == null || !int.TryParse(id.ToString(), out int actividadId))

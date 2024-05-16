@@ -17,9 +17,7 @@ namespace DepartamentosAPI.Models.Validators
               .Must((dto, nombre) => ExisteDepartamento(nombre, context))
               .WithMessage("Ya existe un departamento con este nombre");
             validator.RuleFor(x => x.Usuario)
-                .NotEmpty().WithMessage("El nombre de usuario no puede estar vacío")
-                .Must((dto, usuario) => ExisteUsuario(usuario, context))
-                .WithMessage("Ya existe un departamento con este nombre de usuario");
+                .NotEmpty().WithMessage("El nombre de usuario no puede estar vacío");
             validator.RuleFor(x=>x.Contraseña).NotEmpty().WithMessage("La contraseña no puede estar vacia");
 
             return validator.Validate(departamento);

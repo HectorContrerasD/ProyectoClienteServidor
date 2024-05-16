@@ -22,5 +22,9 @@ namespace DepartamentosAPI.Repositories
             }
             return _context.Departamentos.Include(x => x.IdSuperiorNavigation).FirstOrDefault(x => x.Id == departamentoId);
         }
+        public Departamentos? GetDepartamentosInverse(int id)
+        {
+            return _context.Departamentos.Include(x => x.InverseIdSuperiorNavigation).FirstOrDefault(x => x.Id == id);
+        }
     }
 }
