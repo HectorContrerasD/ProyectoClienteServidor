@@ -1,10 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using DepartamentosAPI.Models.Entities;
+using DepartamentosAPI.Repositories;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-
+builder.Services.AddTransient<ActividadRepository>();
 builder.Services.AddDbContext<ItesrcneActividadesContext>(x =>
 x.UseMySql("server=204.93.216.11;database=itesrcne_actividades;user=itesrcne_deptos;password=sistemaregistrotec24",
 Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.3.29-mariadb")));
