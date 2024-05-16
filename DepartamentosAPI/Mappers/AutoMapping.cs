@@ -1,6 +1,7 @@
 ﻿using DepartamentosAPI.Models.Entities;
 using AutoMapper;
 using DepartamentosAPI.Models.DTOS;
+using Microsoft.AspNetCore.Server.HttpSys;
 
 namespace DepartamentosAPI.Mappers
 {
@@ -22,7 +23,10 @@ namespace DepartamentosAPI.Mappers
 
 
             CreateMap<ActividadDTO, Actividades>();
-            CreateMap<Departamentos, DepartamentoDTO>();
+            CreateMap<Departamentos, DepartamentoDTO>()
+                .ForMember(x=>x.Id, opt => opt.MapFrom(src => src.Id))
+                .ForMember(x=>x.Nombre, opt => opt.MapFrom(src=>src.Nombre))
+                .ForMember(x=>x.DepartamentoSuperior, opt=>opt.MapFrom(src=>src.IdSuperiorNavigation.Nombre));
             CreateMap<DepartamentoDTO, Departamentos>();
         }
     }

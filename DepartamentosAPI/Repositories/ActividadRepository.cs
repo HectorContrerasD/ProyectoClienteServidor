@@ -25,5 +25,13 @@ namespace DepartamentosAPI.Repositories
         {
             return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 0);
         }
+        public override Actividades? Get(object id)
+        {
+            if (id == null || !int.TryParse(id.ToString(), out int actividadId))
+            {
+                return null;
+            }
+            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).FirstOrDefault(x=>x.Id == actividadId) ;
+        }
     }
 }

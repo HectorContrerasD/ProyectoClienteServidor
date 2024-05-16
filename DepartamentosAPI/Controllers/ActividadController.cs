@@ -70,6 +70,21 @@ namespace DepartamentosAPI.Controllers
                 });
             return Ok(actividades);
         }
+        [HttpGet("{id}")]
+        public IActionResult GetActividad(int id)
+        {
+            var actividad = repoActividad.Get(id);
+            if (actividad!= null)
+            {
+                var actividadDTO = mapper.Map<ActividadDTO>(actividad);
+                return Ok(actividadDTO);
+            }
+            else
+            {
+                return NotFound();
+            }
+           
+        }
         [HttpPost]
         public IActionResult Agregar(ActividadCreateDTO actividad)
         {
