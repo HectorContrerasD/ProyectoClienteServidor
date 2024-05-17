@@ -5,9 +5,8 @@ using DepartamentosAPI.Models.Entities;
 using DepartamentosAPI.Models.Validators;
 using DepartamentosAPI.Repositories;
 using FluentValidation.Results;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using System.Xml;
+
 
 namespace DepartamentosAPI.Controllers
 {
@@ -114,8 +113,8 @@ namespace DepartamentosAPI.Controllers
             {
                 foreach (var actividad in actividadesDepartamento)
                 {
-                        actividad.Estado = 2;
-                       _actividadRepository.Update(actividad);
+                      
+                       _actividadRepository.Delete(actividad);
                 }
             }
            
