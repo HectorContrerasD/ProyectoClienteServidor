@@ -6,6 +6,7 @@ using DepartamentosAPI.Repositories;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.FileProviders;
 
 namespace DepartamentosAPI.Controllers
 {
@@ -74,7 +75,7 @@ namespace DepartamentosAPI.Controllers
         public IActionResult GetActividad(int id)
         {
             var actividad = repoActividad.Get(id);
-            if (actividad!= null)
+            if (actividad != null)
             {
                 var actividadDTO = mapper.Map<ActividadDTO>(actividad);
                 return Ok(actividadDTO);
@@ -83,7 +84,7 @@ namespace DepartamentosAPI.Controllers
             {
                 return NotFound();
             }
-           
+
         }
         [HttpPost]
         public IActionResult Agregar(ActividadCreateDTO actividad)
@@ -101,7 +102,7 @@ namespace DepartamentosAPI.Controllers
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now,
                         FechaRealizacion = actividad.FechaRealizacion,
-                        Estado = 1
+                        Estado = 0
                     };
                     repoActividad.Insert(actividadAdd);
                     return Ok(actividadAdd);
@@ -120,11 +121,11 @@ namespace DepartamentosAPI.Controllers
         [HttpPut("{id}")]
         public IActionResult Editar(ActividadCreateDTO act)
         {
-           ValidationResult validate = ActividadValidator.Validate(act);
+            ValidationResult validate = ActividadValidator.Validate(act);
             if (validate.IsValid)
             {
-                var actividadEditar = repoActividad.Get(act.Id??0);
-                if (actividadEditar!=null)
+                var actividadEditar = repoActividad.Get(act.Id ?? 0);
+                if (actividadEditar != null)
                 {
                     actividadEditar.Titulo = act.Titulo;
                     actividadEditar.Estado = act.Estado;
@@ -133,7 +134,7 @@ namespace DepartamentosAPI.Controllers
                     actividadEditar.FechaActualizacion = DateTime.Now;
                     actividadEditar.FechaRealizacion = act.FechaRealizacion;
                     repoActividad.Update(actividadEditar);
-                    return Ok(actividadEditar); 
+                    return Ok(actividadEditar);
                 }
                 else
                 {
@@ -142,9 +143,28 @@ namespace DepartamentosAPI.Controllers
             }
             else
             {
-                return BadRequest(validate.Errors.Select(x=>x.ErrorMessage));
+                return BadRequest(validate.Errors.Select(x => x.ErrorMessage));
             }
-            
+        }
+        [HttpPut("Publicar")]
+        public IActionResult Publicar(ActividadCreateDTO actividad)
+        {
+            ValidationResult validate = ActividadValidator.Validate(actividad);
+            if (validate.IsValid)
+            {
+                var actividadAPublicar = repoActividad.Get(actividad.Id);
+                if (actividadAPublicar != null)
+                {
+                    actividadAPublicar.Estado = 1;
+                    repoActividad.Update(actividadAPublicar);
+                    return Ok();
+                }
+                else
+                {
+                    return NotFound();
+                }
+            }
+            else { return BadRequest(validate.Errors.Select(x => x.ErrorMessage)); }
         }
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)

@@ -17,7 +17,11 @@ namespace DepartamentosAPI.Models.Validators
               .Must((dto, nombre) => ExisteDepartamento(nombre, context))
               .WithMessage("Ya existe un departamento con este nombre");
             validator.RuleFor(x => x.Usuario)
-                .NotEmpty().WithMessage("El nombre de usuario no puede estar vacío");
+                .NotEmpty().WithMessage("El nombre de usuario no puede estar vacío")
+                .Must((dto, nombre) => ExisteUsuario(departamento, context)).WithMessage("Este usuario ya existe")
+                .Must(usuario => TieneExtensionCorrecta(usuario))
+                .WithMessage("El nombre de usuario debe tener la extensión '@equipo9.com'");
+                
             validator.RuleFor(x=>x.Contraseña).NotEmpty().WithMessage("La contraseña no puede estar vacia");
 
             return validator.Validate(departamento);
@@ -28,9 +32,13 @@ namespace DepartamentosAPI.Models.Validators
             return !context.Departamentos.Any(d => d.Nombre == nombre);
         }
 
-        private static bool ExisteUsuario(string usuario, ItesrcneActividadesContext context)
+        private static bool ExisteUsuario(DepartamentoCreateDTO departamento, ItesrcneActividadesContext context)
         {
-            return !context.Departamentos.Any(d => d.Username == usuario);
+            return !context.Departamentos.Any(d => d.Username == departamento.Usuario && d.Id == departamento.Id);
+        }
+        private static bool TieneExtensionCorrecta(string usuario)
+        {
+            return usuario.EndsWith("@equipo9.com", StringComparison.OrdinalIgnoreCase);
         }
     }
 }

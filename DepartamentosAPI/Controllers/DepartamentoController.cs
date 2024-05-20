@@ -120,6 +120,22 @@ namespace DepartamentosAPI.Controllers
            
             if (departamento != null)
             {
+                var departamentosSub = _repository.GetAll().Where(x=>x.IdSuperior == departamento.Id);
+                if (departamentosSub != null)
+                {
+                    foreach (var item in departamentosSub)
+                    {
+                        var actividadesDepartamentosub   = _actividadRepository.GetAll().Where(x=>x.IdDepartamento == item.Id);
+                        if(actividadesDepartamento != null)
+                        {
+                            foreach (var actividad in actividadesDepartamentosub)
+                            {
+                                _actividadRepository.Delete(actividad);
+                            }
+                        }
+                        _repository.Delete(item);
+                    }
+                }
                 departamento.IdSuperior = null;
                 _repository.Update(departamento);
                 _repository.Delete(departamento);

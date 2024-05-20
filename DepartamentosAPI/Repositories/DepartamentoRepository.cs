@@ -26,5 +26,9 @@ namespace DepartamentosAPI.Repositories
         {
             return _context.Departamentos.Include(x => x.InverseIdSuperiorNavigation).FirstOrDefault(x => x.Id == id);
         }
+        public Departamentos? GetUsuario(string email, string contrasena)
+        {
+            return _context.Departamentos.Where(x => x.Username == email && x.Password == contrasena).FirstOrDefault();
+        }
     }
 }
