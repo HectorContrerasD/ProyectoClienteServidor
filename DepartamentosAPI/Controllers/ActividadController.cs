@@ -4,6 +4,7 @@ using DepartamentosAPI.Models.Entities;
 using DepartamentosAPI.Models.Validators;
 using DepartamentosAPI.Repositories;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
@@ -11,9 +12,11 @@ using Microsoft.Extensions.FileProviders;
 namespace DepartamentosAPI.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles ="Admin,Users")]
     [ApiController]
     public class ActividadController : ControllerBase
     {
+        
         private readonly ActividadRepository repoActividad;
         private readonly IMapper mapper;
         public ActividadController(ActividadRepository actividadRepository, IMapper mapper)

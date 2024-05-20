@@ -9,12 +9,12 @@ using DepartamentosAPI.Helpers;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddTransient<ActividadRepository>();
-builder.Services.AddTransient<DepartamentoRepository>();
-builder.Services.AddSingleton<JWTHelper>();
 builder.Services.AddDbContext<ItesrcneActividadesContext>(x =>
 x.UseMySql("server=204.93.216.11;database=itesrcne_actividades;user=itesrcne_deptos;password=sistemaregistrotec24",
 Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.3.29-mariadb")));
+builder.Services.AddTransient<ActividadRepository>();
+builder.Services.AddTransient<DepartamentoRepository>();
+builder.Services.AddSingleton<JWTHelper>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -25,17 +25,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJw
     (
         x=>
         {
-            var issuer = builder.Configuration.GetSection("Jwt").GetValue<string>("Iusser");
-            var audience = builder.Configuration.GetSection("Jwt").GetValue<string>("Audience");
-            var secret = builder.Configuration.GetSection("Jwt").GetValue<string>("Secret");
+            var issuer = builder.Configuration.GetSection("JWT").GetValue<string>("Issuer");
+            var audience = builder.Configuration.GetSection("JWT").GetValue<string>("Audience");
+            var secret = builder.Configuration.GetSection("JWT").GetValue<string>("Secret");
             x.TokenValidationParameters = new()
             {
                 ValidIssuer = issuer,
                 ValidAudience = audience,
                 IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret ?? "")),
-                ValidateIssuer = true,
-                ValidateAudience = true,
-                ValidateIssuerSigningKey = true,
                 ValidateLifetime = true
             };
         }

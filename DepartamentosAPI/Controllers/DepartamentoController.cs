@@ -5,17 +5,21 @@ using DepartamentosAPI.Models.Entities;
 using DepartamentosAPI.Models.Validators;
 using DepartamentosAPI.Repositories;
 using FluentValidation.Results;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata;
 
 
 namespace DepartamentosAPI.Controllers
 {
     [Route("api/[controller]")]
+    [Authorize(Roles = "Admin")]
     [ApiController]
     public class DepartamentoController : ControllerBase
     {
         private readonly DepartamentoRepository _repository;
         private readonly ActividadRepository _actividadRepository;
+        
         private readonly IMapper _mapper;
         public DepartamentoController(DepartamentoRepository repoDepartamento, IMapper mapper, ActividadRepository actividadRepository )
         {
@@ -26,6 +30,7 @@ namespace DepartamentosAPI.Controllers
         [HttpGet]
         public IActionResult GetAll()
         {
+           
             var departamentos = _repository.GetAll().Select(x=> new DepartamentoDTO
             {
                 Id = x.Id,
@@ -37,6 +42,7 @@ namespace DepartamentosAPI.Controllers
         [HttpGet("{id}")]
         public IActionResult Get(int id)
         {
+            
             var departamento = _repository.Get(id);
             if (departamento != null)
             {
@@ -61,10 +67,10 @@ namespace DepartamentosAPI.Controllers
                         Nombre = dto.Nombre,
                         Password = Encryption.StringToSHA512(dto.Contraseña),
                         Username = dto.Usuario,
-                        IdSuperior = dto.IdSuperior
+                        IdSuperior = dto.IdSuperior??null
                     };
                     _repository.Insert(departamento);
-                    return Ok(departamento);
+                    return Ok("departamento agregado");
                 }
                 else
                 {
@@ -90,7 +96,7 @@ namespace DepartamentosAPI.Controllers
                     departamento.Password = Encryption.StringToSHA512(dto.Contraseña);
                     departamento.IdSuperior = dto.IdSuperior;
                     _repository.Update(departamento);
-                    return Ok(departamento);
+                    return Ok("departamento actualizado");
                 }
                 else
                 {
