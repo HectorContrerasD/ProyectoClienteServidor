@@ -11,8 +11,7 @@ namespace DepartamentosAPI.Models.Validators
             var validator = new InlineValidator<ActividadCreateDTO>();
             validator.RuleFor(x=>x.Titulo)
                 .NotEmpty().WithMessage("Se necesita el título de la actividad");
-            validator.RuleFor(x => x.Departamento)
-                .NotEmpty().WithMessage("Se neceita el departamento al que pertenece la actividad");
+           
             validator.RuleFor(x => x.Estado).NotEmpty().WithMessage("Se necesita el estado");
             validator.RuleFor(x => x.Estado).GreaterThan(0).LessThan(3).WithMessage("El estado no existe");
         

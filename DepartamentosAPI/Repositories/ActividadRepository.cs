@@ -15,7 +15,7 @@ namespace DepartamentosAPI.Repositories
         // 0 borrador, 1 publicado, 2 eliminado
         public IEnumerable<Actividades>? GetActividades()
         {
-            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x => x.Estado == 1);
+            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x => x.Estado == 1 );
         }
         public IEnumerable<Actividades>? GetActividadesEliminadas()
         {
@@ -36,6 +36,18 @@ namespace DepartamentosAPI.Repositories
                 return null;
             }
             return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).FirstOrDefault(x=>x.Id == actividadId) ;
+        }
+        public IEnumerable<Actividades>? GetActividadesByDepartamentoAndSubdepartamentos(int departamentoId, int estado)
+        {
+            var departamentosIds = _context.Departamentos
+                .Where(d => d.Id == departamentoId || d.IdSuperior == departamentoId)
+                .Select(d => d.Id)
+                .ToList();
+
+            return _context.Actividades
+                .Include(x => x.IdDepartamentoNavigation)
+                .Where(x => departamentosIds.Contains(x.IdDepartamento) && x.Estado == estado)
+                .ToList();
         }
     }
 }

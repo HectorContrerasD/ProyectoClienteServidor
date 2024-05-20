@@ -8,11 +8,12 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.FileProviders;
+using System.Security.Claims;
 
 namespace DepartamentosAPI.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles ="Admin,Users")]
+    [Authorize(Roles ="Admin,User")]
     [ApiController]
     public class ActividadController : ControllerBase
     {
@@ -25,10 +26,10 @@ namespace DepartamentosAPI.Controllers
             this.mapper = mapper;
         }
         [HttpGet("Publicadas")]
-        public IActionResult GetActividadesPublicadas()
+        public IActionResult GetActividadesPublicadas(int departamentoId)
         {
-
-            var actividades = repoActividad.GetActividades()?.OrderBy(x => x.Titulo)
+            var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 1)?
+                .OrderBy(x => x.Titulo)
                 .Select(x => new ActividadDTO
                 {
                     Id = x.Id,
@@ -41,10 +42,12 @@ namespace DepartamentosAPI.Controllers
                 });
             return Ok(actividades);
         }
+
         [HttpGet("Borradores")]
-        public IActionResult GetBorradores()
+        public IActionResult GetBorradores(int departamentoId)
         {
-            var actividades = repoActividad.GetBorradores()?.OrderBy(x => x.Titulo)
+            var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 0)?
+                .OrderBy(x => x.Titulo)
                 .Select(x => new ActividadDTO
                 {
                     Id = x.Id,
@@ -57,11 +60,11 @@ namespace DepartamentosAPI.Controllers
                 });
             return Ok(actividades);
         }
-        [HttpGet("Eliminadas")]
-        public IActionResult GetActividadesEliminadas()
-        {
 
-            var actividades = repoActividad.GetActividadesEliminadas()?.OrderBy(x => x.Titulo)
+        [HttpGet("Eliminadas")]
+        public IActionResult GetActividadesEliminadas(int departamentoId)
+        {
+            var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 2)?
                 .Select(x => new ActividadDTO
                 {
                     Id = x.Id,
@@ -101,7 +104,7 @@ namespace DepartamentosAPI.Controllers
                     {
                         Descripcion = actividad.Descripcion,
                         Titulo = actividad.Titulo,
-                        IdDepartamento = actividad.Departamento,
+                        IdDepartamento = int.Parse( User.FindFirstValue("Id")),
                         FechaCreacion = DateTime.Now,
                         FechaActualizacion = DateTime.Now,
                         FechaRealizacion = actividad.FechaRealizacion,

@@ -125,20 +125,14 @@ namespace DepartamentosAPI.Controllers
                         _actividadRepository.Delete(actividad);
                     }
                 }
-                var departamentosSub = _repository.GetAll().Where(x=>x.IdSuperior == departamento.Id);
+                var departamentosSub = _repository.GetAll().Where(x=>x.IdSuperior == departamento.Id).ToList();
                 if (departamentosSub != null)
                 {
-                    foreach (var item in departamentosSub)
+                    foreach (var a in departamentosSub)
                     {
-                        var actividadesDepartamentosub   = _actividadRepository.GetAll().Where(x=>x.IdDepartamento == item.Id);
-                        if(actividadesDepartamento != null)
-                        {
-                            foreach (var actividad in actividadesDepartamentosub)
-                            {
-                                _actividadRepository.Delete(actividad);
-                            }
-                        }
-                        _repository.Delete(item);
+                        a.IdSuperior = departamento.IdSuperior;
+                        _repository.Update(a);
+
                     }
                 }
                 departamento.IdSuperior = null;
