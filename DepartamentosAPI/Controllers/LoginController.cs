@@ -19,6 +19,7 @@ namespace DepartamentosAPI.Controllers
         public LoginController(DepartamentoRepository departamentoRepo, JWTHelper jwtHelper )
         {
             departamentoRepository = departamentoRepo;
+            _jwthelper = jwtHelper;
         }
         [HttpPost]
         public IActionResult IniciarSesion(LoginDTO user)

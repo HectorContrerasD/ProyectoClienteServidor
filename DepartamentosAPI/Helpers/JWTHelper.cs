@@ -27,7 +27,7 @@ namespace DepartamentosAPI.Helpers
                 new Claim(JwtRegisteredClaimNames.Aud, audience)
             };
             basicas.AddRange(claims);
-            JwtSecurityToken jwtSecurity = new(issuer, audience, basicas, DateTime.Now, DateTime.Now.AddMinutes(50), new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret ?? "")), SecurityAlgorithms.HmacSha512));
+            JwtSecurityToken jwtSecurity = new(issuer, audience, basicas, DateTime.Now, DateTime.Now.AddMinutes(50), new SigningCredentials(new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret ?? "")), SecurityAlgorithms.HmacSha256));
 
             return handler.WriteToken(jwtSecurity);
         }

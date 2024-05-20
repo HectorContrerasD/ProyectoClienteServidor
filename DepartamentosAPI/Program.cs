@@ -11,6 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddTransient<ActividadRepository>();
 builder.Services.AddTransient<DepartamentoRepository>();
+builder.Services.AddSingleton<JWTHelper>();
 builder.Services.AddDbContext<ItesrcneActividadesContext>(x =>
 x.UseMySql("server=204.93.216.11;database=itesrcne_actividades;user=itesrcne_deptos;password=sistemaregistrotec24",
 Microsoft.EntityFrameworkCore.ServerVersion.Parse("10.3.29-mariadb")));
@@ -48,7 +49,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-builder.Services.AddSingleton<JWTHelper>();
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();

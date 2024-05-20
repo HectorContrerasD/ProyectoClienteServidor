@@ -107,19 +107,18 @@ namespace DepartamentosAPI.Controllers
         [HttpDelete("{id}")]
         public IActionResult Eliminar(int id)
         {
-            var departamento = _repository.Get(id);
-            var actividadesDepartamento = _actividadRepository.GetActividadesByDepartamento(id)?.ToList();
-            if (actividadesDepartamento != null)
-            {
-                foreach (var actividad in actividadesDepartamento)
-                {
-                      
-                       _actividadRepository.Delete(actividad);
-                }
-            }
-           
+            var departamento = _repository.Get(id);      
             if (departamento != null)
             {
+                var actividadesDepartamento = _actividadRepository.GetActividadesByDepartamento(id)?.ToList();
+                if (actividadesDepartamento.Count != 0)
+                {
+                    foreach (var actividad in actividadesDepartamento)
+                    {
+
+                        _actividadRepository.Delete(actividad);
+                    }
+                }
                 var departamentosSub = _repository.GetAll().Where(x=>x.IdSuperior == departamento.Id);
                 if (departamentosSub != null)
                 {
