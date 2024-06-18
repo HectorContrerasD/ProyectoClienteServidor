@@ -10,5 +10,6 @@
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaActualizacion { get; set; }
         public int Estado { get; set; } = 1;
+        public string Imagen { get; set; }
     }
 }

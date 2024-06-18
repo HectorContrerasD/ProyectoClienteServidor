@@ -25,6 +25,8 @@ namespace DepartamentosAPI.Controllers
             repoActividad = actividadRepository;
             this.mapper = mapper;
         }
+
+
         [HttpGet("Publicadas")]
         public IActionResult GetActividadesPublicadas(int departamentoId)
         {
@@ -58,6 +60,7 @@ namespace DepartamentosAPI.Controllers
                     FechaCreacion = x.FechaCreacion,
                     FechaRealizacion = x.FechaRealizacion
                 });
+
             return Ok(actividades);
         }
 
@@ -111,6 +114,10 @@ namespace DepartamentosAPI.Controllers
                         Estado = 0
                     };
                     repoActividad.Insert(actividadAdd);
+
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{actividad.Id}.png");
+                    var bytes = Convert.FromBase64String(actividad.Imagen);
+                    System.IO.File.WriteAllBytes(path, bytes);
                     return Ok(actividadAdd);
                 }
                 else
@@ -140,6 +147,9 @@ namespace DepartamentosAPI.Controllers
                     actividadEditar.FechaActualizacion = DateTime.Now;
                     actividadEditar.FechaRealizacion = act.FechaRealizacion;
                     repoActividad.Update(actividadEditar);
+                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{act.Id}.png");
+                    var bytes = Convert.FromBase64String(act.Imagen);
+                    System.IO.File.WriteAllBytes(path, bytes);
                     return Ok(actividadEditar);
                 }
                 else

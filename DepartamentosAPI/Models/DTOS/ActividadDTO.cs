@@ -8,7 +8,7 @@
         public string Departamento { get; set; } = null!;
         public DateOnly? FechaRealizacion {  get; set; } //cuando se realizó la actividad
         public DateTime FechaCreacion { get; set; }
-        public DateTime FechaActualizacion {get; set; } 
+        public DateTime FechaActualizacion {get; set; }
        
     }
 }
