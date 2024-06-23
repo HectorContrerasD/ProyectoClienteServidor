@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using DepartamentosAPI.Hubs;
 using DepartamentosAPI.Models.DTOS;
 using DepartamentosAPI.Models.Entities;
 using DepartamentosAPI.Models.Validators;
@@ -7,6 +8,7 @@ using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.FileProviders;
 using System.Security.Claims;
 
@@ -20,15 +22,20 @@ namespace DepartamentosAPI.Controllers
         
         private readonly ActividadRepository repoActividad;
         private readonly IMapper mapper;
-        public ActividadController(ActividadRepository actividadRepository, IMapper mapper)
+        private readonly IHubContext<NotificacionesHub> hubContext;
+        public ActividadController(ActividadRepository actividadRepository, IMapper mapper, IHubContext<NotificacionesHub> hub)
         {
             repoActividad = actividadRepository;
             this.mapper = mapper;
+            this.hubContext = hub;
         }
 
-
+        public async Task Notificar(string msg)
+        {
+            await hubContext.Clients.All.SendAsync("RecibirMensaje", msg);
+        }
         [HttpGet("Publicadas/{departamentoId}")]
-        public IActionResult GetActividadesPublicadas(int departamentoId)
+        public  IActionResult GetActividadesPublicadas(int departamentoId)
         {
             
             var actividadessub = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 1)?
@@ -101,7 +108,7 @@ namespace DepartamentosAPI.Controllers
 
         }
         [HttpPost]
-        public IActionResult Agregar(ActividadCreateDTO actividad)
+        public async Task< IActionResult> Agregar(ActividadCreateDTO actividad)
         {
             if (actividad != null)
             {
@@ -131,6 +138,7 @@ namespace DepartamentosAPI.Controllers
                         var bytes = Convert.FromBase64String(actividad.Imagen);
                         System.IO.File.WriteAllBytes(path, bytes);
                     }
+                    await Notificar("Actividad agregada");
                     return Ok(actividadAdd);
                 }
                 else
@@ -145,7 +153,7 @@ namespace DepartamentosAPI.Controllers
 
         }
         [HttpPut]
-        public IActionResult Editar(ActividadCreateDTO act)
+        public async Task< IActionResult> Editar(ActividadCreateDTO act)
         {
             ValidationResult validate = ActividadValidator.Validate(act);
             if (validate.IsValid)
@@ -175,6 +183,7 @@ namespace DepartamentosAPI.Controllers
                             var bytes = Convert.FromBase64String(act.Imagen);
                             System.IO.File.WriteAllBytes(path, bytes);
                         }
+                        await Notificar("Actividad Editada");
                         return Ok(act);
                     }
                     else
@@ -193,9 +202,9 @@ namespace DepartamentosAPI.Controllers
             }
         }
         [HttpPut("Publicar/{id}")]
-        public IActionResult Publicar(int id)
+        public async Task< IActionResult> Publicar(int id)
         {
-          
+     
             var actividadAPublicar = repoActividad.Get(id);
             if (actividadAPublicar != null)
             {
@@ -203,6 +212,7 @@ namespace DepartamentosAPI.Controllers
                 {
                     actividadAPublicar.Estado = 1;
                     repoActividad.Update(actividadAPublicar);
+                    await Notificar("Actividad Publicada");
                     return Ok("Publicada");
 
                 }
@@ -218,7 +228,7 @@ namespace DepartamentosAPI.Controllers
       
         }
         [HttpDelete("{id}")]
-        public IActionResult Delete(int id)
+        public async Task< IActionResult> Delete(int id)
         {
              var actividadDel =repoActividad.Get(id);
             if (actividadDel != null)
@@ -228,6 +238,7 @@ namespace DepartamentosAPI.Controllers
 
                     actividadDel.Estado = 2;
                     repoActividad.Update(actividadDel);
+                    await Notificar("Publicacion eliminada");
                     return Ok(actividadDel);
                 }
                 else

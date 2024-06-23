@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using DepartamentosAPI.Helpers;
+using DepartamentosAPI.Hubs;
 using DepartamentosAPI.Models.DTOS;
 using DepartamentosAPI.Models.Entities;
 using DepartamentosAPI.Models.Validators;
@@ -7,6 +8,7 @@ using DepartamentosAPI.Repositories;
 using FluentValidation.Results;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore.Metadata;
 
 
@@ -19,13 +21,18 @@ namespace DepartamentosAPI.Controllers
     {
         private readonly DepartamentoRepository _repository;
         private readonly ActividadRepository _actividadRepository;
-        
+        private readonly IHubContext<NotificacionesHub> hubContext;
         private readonly IMapper _mapper;
-        public DepartamentoController(DepartamentoRepository repoDepartamento, IMapper mapper, ActividadRepository actividadRepository )
+        public DepartamentoController(DepartamentoRepository repoDepartamento, IMapper mapper, ActividadRepository actividadRepository, IHubContext<NotificacionesHub> hub )
         {
                 _repository = repoDepartamento;
                 _actividadRepository = actividadRepository;
+                this.hubContext = hub;
                 _mapper = mapper;   
+        }
+        public async Task Notificar(string msg)
+        {
+            await hubContext.Clients.All.SendAsync("RecibirMensaje", msg);
         }
         [HttpGet]
         public IActionResult GetAll()
@@ -55,7 +62,7 @@ namespace DepartamentosAPI.Controllers
             }
         }
         [HttpPost]
-        public IActionResult Agregar(DepartamentoCreateDTO dto)
+        public async Task< IActionResult> Agregar(DepartamentoCreateDTO dto)
         {
             if (dto != null)
             {
@@ -70,6 +77,7 @@ namespace DepartamentosAPI.Controllers
                         IdSuperior = dto.IdSuperior??null
                     };
                     _repository.Insert(departamento);
+                    await Notificar("Departamento Agregado");
                     return Ok("departamento agregado");
                 }
                 else
@@ -83,7 +91,7 @@ namespace DepartamentosAPI.Controllers
             }
         }
         [HttpPut("{id}")]
-        public IActionResult Editar (DepartamentoCreateDTO dto)
+        public async Task< IActionResult> Editar (DepartamentoCreateDTO dto)
         {
             ValidationResult validate = DepartamentoValidator.Validate(dto, _repository.Context);
             if (validate.IsValid)
@@ -96,6 +104,7 @@ namespace DepartamentosAPI.Controllers
                     departamento.Password = Encryption.StringToSHA512(dto.Contraseña);
                     departamento.IdSuperior = dto.IdSuperior;
                     _repository.Update(departamento);
+                    await Notificar("Departamento Actualizado");
                     return Ok("departamento actualizado");
                 }
                 else
@@ -111,7 +120,7 @@ namespace DepartamentosAPI.Controllers
 
         }
         [HttpDelete("{id}")]
-        public IActionResult Eliminar(int id)
+        public async Task< IActionResult> Eliminar(int id)
         {
             var departamento = _repository.Get(id);      
             if (departamento != null)
@@ -138,6 +147,8 @@ namespace DepartamentosAPI.Controllers
                 departamento.IdSuperior = null;
                 _repository.Update(departamento);
                 _repository.Delete(departamento);
+                await Notificar($"Departamento eliminado: {departamento.Nombre}");
+                await hubContext.Clients.User(departamento.Nombre).SendAsync("Logout");
                 return Ok("Departamento eliminado");
             }
             else
