@@ -13,7 +13,7 @@ using System.Security.Claims;
 namespace DepartamentosAPI.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles ="Admin,User")]
+    [Authorize(Roles = "Admin,User")]
     [ApiController]
     public class ActividadController : ControllerBase
     {
@@ -27,7 +27,7 @@ namespace DepartamentosAPI.Controllers
         }
 
 
-        [HttpGet("Publicadas")]
+        [HttpGet("Publicadas/{departamentoId}")]
         public IActionResult GetActividadesPublicadas(int departamentoId)
         {
             var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 1)?
@@ -40,15 +40,16 @@ namespace DepartamentosAPI.Controllers
                     Descripcion = x.Descripcion,
                     FechaActualizacion = x.FechaActualizacion,
                     FechaCreacion = x.FechaCreacion,
-                    FechaRealizacion = x.FechaRealizacion
+                    FechaRealizacion = x.FechaRealizacion,
+                    Imagen = ConvertBase64($"wwwroot/images/{x.Id}.jpg")
                 });
             return Ok(actividades);
         }
 
-        [HttpGet("Borradores")]
+        [HttpGet("Borradores/{departamentoId}")]
         public IActionResult GetBorradores(int departamentoId)
         {
-            var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 0)?
+            var actividades = repoActividad.GetActividadesByDepartamento(departamentoId)?
                 .OrderBy(x => x.Titulo)
                 .Select(x => new ActividadDTO
                 {
@@ -58,13 +59,14 @@ namespace DepartamentosAPI.Controllers
                     Descripcion = x.Descripcion,
                     FechaActualizacion = x.FechaActualizacion,
                     FechaCreacion = x.FechaCreacion,
-                    FechaRealizacion = x.FechaRealizacion
+                    FechaRealizacion = x.FechaRealizacion,
+                    Imagen = ConvertBase64($"wwwroot/images/{x.Id}.jpg")
                 });
 
             return Ok(actividades);
         }
 
-        [HttpGet("Eliminadas")]
+        [HttpGet("Eliminadas/{departamentoId}")]
         public IActionResult GetActividadesEliminadas(int departamentoId)
         {
             var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 2)?
@@ -76,7 +78,8 @@ namespace DepartamentosAPI.Controllers
                     Descripcion = x.Descripcion,
                     FechaActualizacion = x.FechaActualizacion,
                     FechaCreacion = x.FechaCreacion,
-                    FechaRealizacion = x.FechaRealizacion
+                    FechaRealizacion = x.FechaRealizacion,
+                    Imagen = ConvertBase64($"wwwroot/images/{x.Id}.jpg")
                 });
             return Ok(actividades);
         }
@@ -113,11 +116,19 @@ namespace DepartamentosAPI.Controllers
                         FechaRealizacion = actividad.FechaRealizacion,
                         Estado = 0
                     };
+                   
                     repoActividad.Insert(actividadAdd);
+                    if (string.IsNullOrEmpty(actividad.Imagen))
+                    {
+                         System.IO.File.Copy("wwwroot/images/Default.jpg", $"wwwroot/images/{actividadAdd.Id}.jpg");
+                    }
+                    else
+                    {
 
-                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{actividad.Id}.png");
-                    var bytes = Convert.FromBase64String(actividad.Imagen);
-                    System.IO.File.WriteAllBytes(path, bytes);
+                        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{actividadAdd.Id}.jpg");
+                        var bytes = Convert.FromBase64String(actividad.Imagen);
+                        System.IO.File.WriteAllBytes(path, bytes);
+                    }
                     return Ok(actividadAdd);
                 }
                 else
@@ -141,15 +152,24 @@ namespace DepartamentosAPI.Controllers
                 if (actividadEditar != null)
                 {
                     actividadEditar.Titulo = act.Titulo;
-                    actividadEditar.Estado = act.Estado;
+                    
                     actividadEditar.Descripcion = act.Descripcion;
-                    actividadEditar.IdDepartamento = act.Departamento;
+                   
                     actividadEditar.FechaActualizacion = DateTime.Now;
                     actividadEditar.FechaRealizacion = act.FechaRealizacion;
                     repoActividad.Update(actividadEditar);
-                    var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{act.Id}.png");
-                    var bytes = Convert.FromBase64String(act.Imagen);
-                    System.IO.File.WriteAllBytes(path, bytes);
+                    if (string.IsNullOrEmpty(act.Imagen))
+                    {
+
+                        System.IO.File.Copy("wwwroot/images/0.png", $"wwwroot/image/{act.Id}.jpg");
+                    }
+                    else
+                    {
+
+                        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{act.Id}.jpg");
+                        var bytes = Convert.FromBase64String(act.Imagen);
+                        System.IO.File.WriteAllBytes(path, bytes);
+                    }
                     return Ok(actividadEditar);
                 }
                 else
@@ -162,25 +182,30 @@ namespace DepartamentosAPI.Controllers
                 return BadRequest(validate.Errors.Select(x => x.ErrorMessage));
             }
         }
-        [HttpPut("Publicar")]
-        public IActionResult Publicar(ActividadCreateDTO actividad)
+        [HttpPut("Publicar/{id}")]
+        public IActionResult Publicar(int id)
         {
-            ValidationResult validate = ActividadValidator.Validate(actividad);
-            if (validate.IsValid)
+          
+            var actividadAPublicar = repoActividad.Get(id);
+            if (actividadAPublicar != null)
             {
-                var actividadAPublicar = repoActividad.Get(actividad.Id);
-                if (actividadAPublicar != null)
+                if (actividadAPublicar.IdDepartamento == int.Parse(User.FindFirstValue("id")??"0"))
                 {
                     actividadAPublicar.Estado = 1;
                     repoActividad.Update(actividadAPublicar);
-                    return Ok();
+                    return Ok("Publicada");
+
                 }
                 else
                 {
-                    return NotFound();
+                    return BadRequest("Solo pueden publicarse las actividades de tu propio departamento");
                 }
             }
-            else { return BadRequest(validate.Errors.Select(x => x.ErrorMessage)); }
+            else
+            {
+                    return NotFound();
+            }
+      
         }
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
@@ -188,14 +213,32 @@ namespace DepartamentosAPI.Controllers
              var actividadDel =repoActividad.Get(id);
             if (actividadDel != null)
             {
-                actividadDel.Estado = 2;
-                repoActividad.Update(actividadDel);
-                return Ok(actividadDel);
+                if (actividadDel.IdDepartamento  == int.Parse(User.FindFirstValue("id")??"0"))
+                {
+
+                    actividadDel.Estado = 2;
+                    repoActividad.Update(actividadDel);
+                    return Ok(actividadDel);
+                }
+                else
+                {
+                   return BadRequest("Esta actividad no le pertenece a este departamento");
+                }
             }
             else
             {
                 return NotFound();
             }
+        }
+        public string ConvertBase64(string imagePath)
+        {
+            if (System.IO.File.Exists(imagePath))
+            {
+                byte[] imageArray = System.IO.File.ReadAllBytes(imagePath);
+                string base64ImageRepresentation = Convert.ToBase64String(imageArray);
+                return base64ImageRepresentation;
+            }
+            return "";
         }
     }
 }

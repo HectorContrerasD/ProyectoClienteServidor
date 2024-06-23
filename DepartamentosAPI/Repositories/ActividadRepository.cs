@@ -13,21 +13,21 @@ namespace DepartamentosAPI.Repositories
             _context = context;
         }
         // 0 borrador, 1 publicado, 2 eliminado
-        public IEnumerable<Actividades>? GetActividades()
-        {
-            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x => x.Estado == 1 );
-        }
-        public IEnumerable<Actividades>? GetActividadesEliminadas()
-        {
-            return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 2);
-        }
-        public IEnumerable<Actividades>? GetBorradores()
-        {
-            return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 0);
-        }
+        //public IEnumerable<Actividades>? GetActividades()
+        //{
+        //    return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x => x.Estado == 1 );
+        //}
+        //public IEnumerable<Actividades>? GetActividadesEliminadas()
+        //{
+        //    return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 2);
+        //}
+        //public IEnumerable<Actividades>? GetBorradores()
+        //{
+        //    return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 0);
+        //}
         public IEnumerable<Actividades> ? GetActividadesByDepartamento(int id)
         {
-            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x=>x.IdDepartamento == id);
+            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x=>x.IdDepartamento == id && x.Estado == 0);
         }
         public override Actividades? Get(object id)
         {

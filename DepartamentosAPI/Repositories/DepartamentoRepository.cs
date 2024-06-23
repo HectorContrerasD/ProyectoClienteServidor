@@ -12,7 +12,7 @@ namespace DepartamentosAPI.Repositories
         }
         public override  IEnumerable<Departamentos> GetAll()
         {
-            return _context.Departamentos.Include(x=>x.InverseIdSuperiorNavigation).OrderBy(x=>x.Nombre);
+            return _context.Departamentos.Include(x=>x.InverseIdSuperiorNavigation).OrderBy(x=>x.Nombre).Where(x=>x.Username.Contains("@equipo9.com"));
         }
         public override Departamentos? Get(object id)
         {

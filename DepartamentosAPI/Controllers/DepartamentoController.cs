@@ -13,7 +13,7 @@ using Microsoft.EntityFrameworkCore.Metadata;
 namespace DepartamentosAPI.Controllers
 {
     [Route("api/[controller]")]
-    [Authorize(Roles = "Admin")]
+    //[Authorize(Roles = "Admin")]
     [ApiController]
     public class DepartamentoController : ControllerBase
     {

@@ -9,6 +9,7 @@
         public DateOnly? FechaRealizacion {  get; set; } //cuando se realizó la actividad
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaActualizacion {get; set; }
-       
+        public string Imagen { get; set; }
+
     }
 }
