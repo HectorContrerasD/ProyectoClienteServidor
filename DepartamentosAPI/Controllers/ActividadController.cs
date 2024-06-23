@@ -30,8 +30,8 @@ namespace DepartamentosAPI.Controllers
         [HttpGet("Publicadas/{departamentoId}")]
         public IActionResult GetActividadesPublicadas(int departamentoId)
         {
-            var actividades = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 1)?
-                .OrderBy(x => x.Titulo)
+            
+            var actividadessub = repoActividad.GetActividadesByDepartamentoAndSubdepartamentos(departamentoId, 1)?
                 .Select(x => new ActividadDTO
                 {
                     Id = x.Id,
@@ -41,15 +41,17 @@ namespace DepartamentosAPI.Controllers
                     FechaActualizacion = x.FechaActualizacion,
                     FechaCreacion = x.FechaCreacion,
                     FechaRealizacion = x.FechaRealizacion,
-                    Imagen = ConvertBase64($"wwwroot/images/{x.Id}.jpg")
-                });
-            return Ok(actividades);
+                   
+                }).OrderBy(x=>x.Titulo);
+          
+
+            return Ok(actividadessub);
         }
 
         [HttpGet("Borradores/{departamentoId}")]
         public IActionResult GetBorradores(int departamentoId)
         {
-            var actividades = repoActividad.GetActividadesByDepartamento(departamentoId)?
+            var actividades = repoActividad.GetActividadesByDepartamento(departamentoId)?.Where(x=>x.Estado ==0)
                 .OrderBy(x => x.Titulo)
                 .Select(x => new ActividadDTO
                 {
@@ -142,7 +144,7 @@ namespace DepartamentosAPI.Controllers
             }
 
         }
-        [HttpPut("{id}")]
+        [HttpPut]
         public IActionResult Editar(ActividadCreateDTO act)
         {
             ValidationResult validate = ActividadValidator.Validate(act);
@@ -151,26 +153,34 @@ namespace DepartamentosAPI.Controllers
                 var actividadEditar = repoActividad.Get(act.Id ?? 0);
                 if (actividadEditar != null)
                 {
-                    actividadEditar.Titulo = act.Titulo;
-                    
-                    actividadEditar.Descripcion = act.Descripcion;
-                   
-                    actividadEditar.FechaActualizacion = DateTime.Now;
-                    actividadEditar.FechaRealizacion = act.FechaRealizacion;
-                    repoActividad.Update(actividadEditar);
-                    if (string.IsNullOrEmpty(act.Imagen))
+                    if (actividadEditar.IdDepartamento == int.Parse(User.FindFirstValue("id")??"0"))
                     {
 
-                        System.IO.File.Copy("wwwroot/images/0.png", $"wwwroot/image/{act.Id}.jpg");
+                        actividadEditar.Titulo = act.Titulo;
+                    
+                        actividadEditar.Descripcion = act.Descripcion;
+                   
+                        actividadEditar.FechaActualizacion = DateTime.Now;
+                        actividadEditar.FechaRealizacion = act.FechaRealizacion;
+                        repoActividad.Update(actividadEditar);
+                        if (string.IsNullOrEmpty(act.Imagen))
+                        {
+
+                            System.IO.File.Copy("wwwroot/images/0.png", $"wwwroot/images/{act.Id}.jpg");
+                        }
+                        else
+                        {
+
+                            var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{act.Id}.jpg");
+                            var bytes = Convert.FromBase64String(act.Imagen);
+                            System.IO.File.WriteAllBytes(path, bytes);
+                        }
+                        return Ok(act);
                     }
                     else
                     {
-
-                        var path = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "images", $"{act.Id}.jpg");
-                        var bytes = Convert.FromBase64String(act.Imagen);
-                        System.IO.File.WriteAllBytes(path, bytes);
+                        return BadRequest("Solo puedes editar tus propias actividades");
                     }
-                    return Ok(actividadEditar);
                 }
                 else
                 {

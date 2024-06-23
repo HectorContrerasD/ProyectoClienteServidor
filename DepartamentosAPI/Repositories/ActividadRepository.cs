@@ -12,22 +12,10 @@ namespace DepartamentosAPI.Repositories
         {
             _context = context;
         }
-        // 0 borrador, 1 publicado, 2 eliminado
-        //public IEnumerable<Actividades>? GetActividades()
-        //{
-        //    return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x => x.Estado == 1 );
-        //}
-        //public IEnumerable<Actividades>? GetActividadesEliminadas()
-        //{
-        //    return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 2);
-        //}
-        //public IEnumerable<Actividades>? GetBorradores()
-        //{
-        //    return _context.Actividades.Include(x => x.IdDepartamentoNavigation).Where(x => x.Estado == 0);
-        //}
+        
         public IEnumerable<Actividades> ? GetActividadesByDepartamento(int id)
         {
-            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x=>x.IdDepartamento == id && x.Estado == 0);
+            return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).Where(x=>x.IdDepartamento == id);
         }
         public override Actividades? Get(object id)
         {
@@ -37,17 +25,32 @@ namespace DepartamentosAPI.Repositories
             }
             return _context.Actividades.Include(x=>x.IdDepartamentoNavigation).FirstOrDefault(x=>x.Id == actividadId) ;
         }
+        private List<int> GetAllSubdepartamentos(int departamentoId)
+        {
+            List<int> subdepartamentosIds = new List<int>();
+            var subdepartamentos = _context.Departamentos
+                                           .Where(d => d.IdSuperior == departamentoId)
+                                           .Select(d => d.Id)
+                                           .ToList();
+
+            foreach (var subId in subdepartamentos)
+            {
+                subdepartamentosIds.Add(subId);
+                subdepartamentosIds.AddRange(GetAllSubdepartamentos(subId));
+            }
+
+            return subdepartamentosIds;
+        }
+
         public IEnumerable<Actividades>? GetActividadesByDepartamentoAndSubdepartamentos(int departamentoId, int estado)
         {
-            var departamentosIds = _context.Departamentos
-                .Where(d => d.Id == departamentoId || d.IdSuperior == departamentoId)
-                .Select(d => d.Id)
-                .ToList();
+            var departamentosIds = new List<int> { departamentoId };
+            departamentosIds.AddRange(GetAllSubdepartamentos(departamentoId));
 
             return _context.Actividades
-                .Include(x => x.IdDepartamentoNavigation)
-                .Where(x => departamentosIds.Contains(x.IdDepartamento) && x.Estado == estado)
-                .ToList();
+                           .Include(x => x.IdDepartamentoNavigation)
+                           .Where(x => departamentosIds.Contains(x.IdDepartamento) && x.Estado == estado)
+                           .ToList();
         }
     }
 }
