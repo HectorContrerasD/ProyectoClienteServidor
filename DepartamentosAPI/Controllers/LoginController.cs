@@ -33,8 +33,7 @@ namespace DepartamentosAPI.Controllers
                     return Unauthorized();
                 }
                 var token = _jwthelper.GetToken(usuario.Username, usuario.IdSuperior == null ? "Admin" : "User", usuario.Id, new List<Claim>()
-                { new Claim("Id", usuario.Id.ToString()),new Claim("IdSuperior", usuario.IdSuperior.ToString())}); 
-                
+                { new Claim("Id", usuario.Id.ToString())}); 
                 return Ok(token);
             }
             else 
